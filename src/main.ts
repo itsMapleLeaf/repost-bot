@@ -4,31 +4,18 @@ import {
 	Message,
 	MessageReaction,
 	TextChannel,
+	User,
 } from "discord.js"
-import Jimp from "jimp"
-import { uniqBy } from "lodash"
 import { from } from "rxjs"
-import { filter, switchMap } from "rxjs/operators"
+import { filter, mergeMap } from "rxjs/operators"
 import secrets from "../secrets.json"
 import { isTruthy } from "./helpers"
-import { ImageLoader } from "./image-loader"
+import { ImagePost, RepostCop } from "./repost-cop"
+
+const bot = new RepostCop(100)
 
 const client = new Client()
 const checkedChannels = new Set(["671787605624487941"])
-
-let prevPostedImages: readonly ImageLoader[] = []
-
-function addImageLoader(loader: ImageLoader) {
-	prevPostedImages = uniqBy([...prevPostedImages, loader], (l) => l.url).slice(
-		-50,
-	)
-}
-
-function createImageLoader(url: string, messageId: string) {
-	const loader = new ImageLoader(url, messageId)
-	addImageLoader(loader)
-	return loader
-}
 
 function getMessageImages(message: Message) {
 	const attachedImages = message.attachments.map((a) => a.url)
@@ -44,84 +31,80 @@ const isTextChannel = (channel: Channel): channel is TextChannel =>
 	channel instanceof TextChannel
 
 async function loadInitialImages() {
-	return from(checkedChannels)
-		.pipe(
-			switchMap((id) => client.channels.fetch(id)),
-			filter(isTextChannel),
-			switchMap((channel) => channel.messages.fetch({ limit: 50 })),
-			switchMap((messageList) => from(messageList.values())),
-			switchMap((message) => {
-				const images = getMessageImages(message)
-				return from(images.map((url) => ({ url, message })))
-			}),
-			switchMap(({ url, message }) =>
-				createImageLoader(url, message.id).load(),
-			),
-		)
-		.toPromise()
+	const obs = from(checkedChannels).pipe(
+		mergeMap((id) => client.channels.fetch(id)),
+		filter(isTextChannel),
+		mergeMap((channel) => channel.messages.fetch({ limit: 100 })),
+		mergeMap((messageList) => from(messageList.values())),
+		mergeMap((message) => {
+			const images = getMessageImages(message)
+			return from(images.map((url) => ({ url, message })))
+		}),
+	)
+
+	obs.subscribe(({ url, message }) => {
+		bot.addPost({ imageUrl: url, messageLink: message.url })
+	})
+
+	return obs.toPromise()
 }
 
 client.on("ready", async () => {
+	console.info("fetching initial images")
 	await loadInitialImages()
+
 	console.info("ready")
 })
 
 client.on("message", async (message) => {
+	if (message.author.id === client.user?.id) return
 	if (!checkedChannels.has(message.channel.id)) return
 
 	const imageUrls = getMessageImages(message)
 
-	for (const url of imageUrls) {
-		const loader = new ImageLoader(url, message.id)
+	const posts = imageUrls.map(
+		(imageUrl): ImagePost => ({ imageUrl, messageLink: message.url }),
+	)
 
-		loader.load().then((image) => {
-			if (!image) return
+	from(posts)
+		.pipe(mergeMap((post) => bot.findRepost(post)))
+		.subscribe({
+			next: async (repost) => {
+				if (!repost) return
 
-			for (const prevLoader of prevPostedImages) {
-				if (!prevLoader.image) continue
+				const botMessage = await message.channel.send({
+					content: `looks like you might've posted a duplicate!`,
+					embed: {
+						fields: [
+							{ name: "this image:", value: message.url, inline: false },
+							{
+								name: "looks similar to this:",
+								value: repost.post.messageLink,
+								inline: false,
+							},
+						],
+						footer: {
+							text: `${
+								repost.similarity * 100
+							}% similarity - press ❌ to remove`,
+						},
+					},
+				})
 
-				const diff = Jimp.distance(image, prevLoader.image)
-				if (diff < 0.1) {
-					message.channel.messages
-						.fetch(prevLoader.messageId)
-						.then((otherMessage) => {
-							return message.channel.send({
-								content: `looks like you might've posted a duplicate!`,
-								embed: {
-									fields: [
-										{ name: "this image:", value: message.url, inline: false },
-										{
-											name: "looks similar to this:",
-											value: otherMessage.url,
-											inline: false,
-										},
-									],
-									footer: {
-										text: `${(1 - diff) * 100}% certainty - react ❌ to remove`,
-									},
-								},
-							})
-						})
-						.then(async (newMessage) => {
-							await newMessage.react("❌")
+				await botMessage.react("❌")
 
-							newMessage
-								.awaitReactions(
-									(reaction: MessageReaction) => reaction.emoji.name === "❌",
-									{ max: 1 },
-								)
-								.then(() => {
-									newMessage.delete()
-								})
-						})
-				}
-			}
+				await botMessage.awaitReactions(
+					(reaction: MessageReaction, user: User) =>
+						reaction.emoji.name === "❌" && user.id === message.author.id,
+					{ max: 1 },
+				)
 
-			addImageLoader(loader)
+				botMessage.delete()
+			},
+			complete: () => {
+				bot.addPost(...posts)
+			},
 		})
-	}
-
-	return
 })
 
 async function main() {
