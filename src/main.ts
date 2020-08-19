@@ -8,7 +8,7 @@ import {
 } from "discord.js"
 import { from } from "rxjs"
 import { filter, mergeMap } from "rxjs/operators"
-import secrets from "../secrets.json"
+import { channels, discordBotToken } from "./constants"
 import { isTruthy } from "./helpers"
 import { ImagePost, RepostCop } from "./repost-cop"
 
@@ -17,7 +17,7 @@ const bot = new RepostCop(100)
 const client = new Client()
 
 // this will be configurable later
-const checkedChannels = new Set(secrets.channels)
+const checkedChannels = new Set(channels)
 
 function getMessageImages(message: Message) {
 	const attachedImages = message.attachments.map((a) => a.url)
@@ -117,7 +117,7 @@ client.on("message", async (message) => {
 })
 
 async function main() {
-	await client.login(secrets.discordBotToken)
+	await client.login(discordBotToken)
 }
 
 main().catch((error) => {
