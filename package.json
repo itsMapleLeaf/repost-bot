@@ -2,15 +2,13 @@
 	"name": "repost-cop",
 	"private": true,
 	"scripts": {
-		"dev": "ts-node-dev --transpile-only --no-notify src/main"
+		"dev": "ts-node-dev --transpile-only --no-notify src/main",
+		"start": "ts-node --transpile-only src/main"
 	},
 	"dependencies": {
 		"axios": "^0.19.2",
 		"discord.js": "^12.3.1",
-		"ffmpeg-image-diff": "^1.14.0",
 		"jimp": "^0.16.0",
-		"lcs-image-diff": "^2.0.1",
-		"pixelmatch": "^5.2.1",
 		"sharp": "^0.25.4",
 		"ts-node": "^8.10.2"
 	},

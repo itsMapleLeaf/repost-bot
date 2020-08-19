@@ -1,5 +1,4 @@
 import Axios from "axios"
-import * as crypto from "crypto"
 import { Client } from "discord.js"
 import Jimp from "jimp"
 import sharp from "sharp"
@@ -14,10 +13,6 @@ async function readImage(url: string) {
 	}
 
 	return Jimp.read(url)
-}
-
-function createHash(data: crypto.BinaryLike) {
-	return crypto.createHash("md5").update(data).digest("hex")
 }
 
 const client = new Client()

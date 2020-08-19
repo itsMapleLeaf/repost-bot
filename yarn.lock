@@ -681,11 +681,6 @@ expand-template@^2.0.3:
   resolved "https://registry.yarnpkg.com/expand-template/-/expand-template-2.0.3.tgz#6e14b3fcee0f3a6340ecb57d2e8918692052a47c"
   integrity sha512-XYfuKMvj4O35f/pOXLObndIRvyQ+/+6AhODh+OKWj9S9498pHHn/IMszH+gt0fBCRWMNfk1ZSp5x3AifmnI2vg==
 
-ffmpeg-image-diff@^1.14.0:
-  version "1.14.0"
-  resolved "https://registry.yarnpkg.com/ffmpeg-image-diff/-/ffmpeg-image-diff-1.14.0.tgz#f99142e2bfce10b6d01b6f6460765ba4396b0332"
-  integrity sha512-DTSG23rJ3wkHDZl0byCxZp3VcbHPhvJwKqclUCFA3jxtEjLHmY9MXvsOLFnijHuS4S1GzYD2wVavgJ6A1a3Kag==
-
 file-type@^9.0.0:
   version "9.0.0"
   resolved "https://registry.yarnpkg.com/file-type/-/file-type-9.0.0.tgz#a68d5ad07f486414dfb2c8866f73161946714a18"
@@ -819,11 +814,6 @@ image-q@^1.1.1:
   resolved "https://registry.yarnpkg.com/image-q/-/image-q-1.1.1.tgz#fc84099664460b90ca862d9300b6bfbbbfbf8056"
   integrity sha1-/IQJlmRGC5DKhi2TALa/u7+/gFY=
 
-imagetracerjs@^1.2.5:
-  version "1.2.6"
-  resolved "https://registry.yarnpkg.com/imagetracerjs/-/imagetracerjs-1.2.6.tgz#1f618b9b94b6f298145ce9cb5e74a88447f15184"
-  integrity sha512-LKJlnKmXFzDdh6IZtXTyBxXcCLTAkwgKYS+NMiPXiXVnlTLjQC8fq7U89laUSgHtypJB3TdMMDK4ecG5NI/Cgw==
-
 indent-string@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/indent-string/-/indent-string-2.1.0.tgz#8e2d48348742121b4a8218b7a137e9a52049dc80"
@@ -930,13 +920,6 @@ jpeg-js@^0.4.0:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/jpeg-js/-/jpeg-js-0.4.1.tgz#937a3ae911eb6427f151760f8123f04c8bfe6ef7"
   integrity sha512-jA55yJiB5tCXEddos8JBbvW+IMrqY0y1tjjx9KNVtA+QPmu7ND5j0zkKopClpUTsaETL135uOM2XfcYG4XRjmw==
-
-lcs-image-diff@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/lcs-image-diff/-/lcs-image-diff-2.0.1.tgz#53901063e032478ff4ce0c04ffe7f0f791869fda"
-  integrity sha512-ahY+sUAThUnL4J5eGBOjA4QaPCN+n55rOzUz2/uY1y6VJA1tQTkhJqUSlvsDm3YrMcRmoUbD1l/asMa77YSXzw==
-  dependencies:
-    imagetracerjs "^1.2.5"
 
 load-bmfont@^1.3.1, load-bmfont@^1.4.0:
   version "1.4.1"
@@ -1249,22 +1232,10 @@ pixelmatch@^4.0.2:
   dependencies:
     pngjs "^3.0.0"
 
-pixelmatch@^5.2.1:
-  version "5.2.1"
-  resolved "https://registry.yarnpkg.com/pixelmatch/-/pixelmatch-5.2.1.tgz#9e4e4f4aa59648208a31310306a5bed5522b0d65"
-  integrity sha512-WjcAdYSnKrrdDdqTcVEY7aB7UhhwjYQKYhHiBXdJef0MOaQeYpUdQ+iVyBLa5YBKS8MPVPPMX7rpOByISLpeEQ==
-  dependencies:
-    pngjs "^4.0.1"
-
 pngjs@^3.0.0, pngjs@^3.3.3:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/pngjs/-/pngjs-3.4.0.tgz#99ca7d725965fb655814eaf65f38f12bbdbf555f"
   integrity sha512-NCrCHhWmnQklfH4MtJMRjZ2a8c80qXeMlQMv2uVp9ISJMTt562SbGd6n2oq0PaPgKm7Z6pL9E2UlLIhC+SHL3w==
-
-pngjs@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/pngjs/-/pngjs-4.0.1.tgz#f803869bb2fc1bfe1bf99aa4ec21c108117cfdbe"
-  integrity sha512-rf5+2/ioHeQxR6IxuYNYGFytUyG3lma/WW1nsmjeHlWwtb2aByla6dkVc8pmJ9nplzkTA0q2xx7mMWrOTqT4Gg==
 
 prebuild-install@^5.3.4:
   version "5.3.5"
