@@ -6,9 +6,14 @@
 		"start": "ts-node --transpile-only src/main"
 	},
 	"dependencies": {
+		"@types/lodash": "^4.14.159",
 		"axios": "^0.19.2",
 		"discord.js": "^12.3.1",
 		"jimp": "^0.16.0",
+		"lodash": "^4.17.20",
+		"lodash.uniqby": "^4.7.0",
+		"micro-observables": "^1.5.0",
+		"rxjs": "^6.6.2",
 		"sharp": "^0.25.4",
 		"ts-node": "^8.10.2"
 	},
