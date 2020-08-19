@@ -15,7 +15,9 @@ import { ImagePost, RepostCop } from "./repost-cop"
 const bot = new RepostCop(100)
 
 const client = new Client()
-const checkedChannels = new Set(["671787605624487941"])
+
+// this will be configurable later
+const checkedChannels = new Set(secrets.channels)
 
 function getMessageImages(message: Message) {
 	const attachedImages = message.attachments.map((a) => a.url)
@@ -60,6 +62,12 @@ client.on("message", async (message) => {
 	if (message.author.id === client.user?.id) return
 	if (!checkedChannels.has(message.channel.id)) return
 
+	console.info(
+		`checking ${message.id} from ${message.author.username} in ${
+			(message.channel as TextChannel).name
+		}`,
+	)
+
 	const imageUrls = getMessageImages(message)
 
 	const posts = imageUrls.map(
@@ -103,6 +111,7 @@ client.on("message", async (message) => {
 			},
 			complete: () => {
 				bot.addPost(...posts)
+				console.info(`done ${message.id}`)
 			},
 		})
 })
