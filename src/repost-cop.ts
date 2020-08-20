@@ -40,7 +40,7 @@ export class RepostCop {
 						return { post: entry.post, similarity }
 					},
 				),
-				find((result) => result.similarity > 0.9),
+				find((result) => result.similarity > 0.95),
 			)
 			.toPromise()
 
