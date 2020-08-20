@@ -6,11 +6,11 @@ import {
 	TextChannel,
 	User,
 } from "discord.js"
-import { from } from "rxjs"
-import { filter, mergeMap } from "rxjs/operators"
+import { defer, from, Subject } from "rxjs"
+import { concatMap, filter, mergeMap } from "rxjs/operators"
 import { channels, discordBotToken } from "./constants"
 import { isTruthy } from "./helpers"
-import { ImagePost, RepostCop } from "./repost-cop"
+import { FindRepostResult, ImagePost, RepostCop } from "./repost-cop"
 
 const bot = new RepostCop(100)
 
@@ -45,41 +45,51 @@ async function loadInitialImages() {
 	)
 
 	obs.subscribe(({ url, message }) => {
+		console.info(`found image ${url}`)
 		bot.addPost({ imageUrl: url, messageLink: message.url })
 	})
 
 	return obs.toPromise()
 }
 
-client.on("ready", async () => {
-	console.info("fetching initial images")
-	await loadInitialImages()
+const messageQueue = new Subject<Message>()
 
-	console.info("ready")
-})
+messageQueue
+	.pipe(
+		filter((message) => message.author.id !== client.user?.id),
+		filter((message) => checkedChannels.has(message.channel.id)),
 
-client.on("message", async (message) => {
-	if (message.author.id === client.user?.id) return
-	if (!checkedChannels.has(message.channel.id)) return
+		// using concatMap so that the next repost-finding process
+		// waits for the previous one
+		concatMap(async (message) => {
+			const imageUrls = getMessageImages(message)
 
-	console.info(
-		`checking ${message.id} from ${message.author.username} in ${
-			(message.channel as TextChannel).name
-		}`,
-	)
+			const posts = imageUrls.map<ImagePost>((imageUrl) => ({
+				imageUrl,
+				messageLink: message.url,
+			}))
 
-	const imageUrls = getMessageImages(message)
+			// deferring, so that findRepost isn't called
+			// until the previous stream from the concatMap is done
+			const repost$ = defer(() => {
+				console.info(
+					`checking ${message.id} from ${message.author.username} in #${
+						(message.channel as TextChannel).name
+					}`,
+				)
 
-	const posts = imageUrls.map(
-		(imageUrl): ImagePost => ({ imageUrl, messageLink: message.url }),
-	)
+				return from(posts).pipe(
+					concatMap((post) =>
+						defer(() => {
+							console.info(`checking ${post.imageUrl}`)
+							return bot.findRepost(post)
+						}),
+					),
+					filter((repost): repost is FindRepostResult => repost != null),
+				)
+			})
 
-	from(posts)
-		.pipe(mergeMap((post) => bot.findRepost(post)))
-		.subscribe({
-			next: async (repost) => {
-				if (!repost) return
-
+			async function showRepostMessage(repost: FindRepostResult) {
 				const botMessage = await message.channel.send({
 					content: `looks like you might've posted a duplicate!`,
 					embed: {
@@ -108,12 +118,32 @@ client.on("message", async (message) => {
 				)
 
 				botMessage.delete()
-			},
-			complete: () => {
-				bot.addPost(...posts)
-				console.info(`done ${message.id}`)
-			},
-		})
+			}
+
+			repost$.subscribe({
+				next: (repost) => {
+					showRepostMessage(repost)
+				},
+				complete: () => {
+					bot.addPost(...posts)
+					console.info(`done ${message.id}`)
+				},
+			})
+
+			return repost$
+		}),
+	)
+	.subscribe()
+
+client.on("ready", async () => {
+	console.info("fetching initial images")
+	await loadInitialImages()
+
+	console.info("ready")
+})
+
+client.on("message", async (message) => {
+	messageQueue.next(message)
 })
 
 async function main() {

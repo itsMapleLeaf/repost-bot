@@ -1,7 +1,7 @@
 import Jimp from "jimp"
 import { uniqBy } from "lodash"
 import { from } from "rxjs"
-import { find, map, mergeMap } from "rxjs/operators"
+import { concatMap, find, map } from "rxjs/operators"
 import { readImage } from "./read-image"
 
 export type ImagePost = {
@@ -30,7 +30,7 @@ export class RepostCop {
 
 		const repost = await from(this.posts)
 			.pipe(
-				mergeMap(async (post) => {
+				concatMap(async (post) => {
 					const image = await readImage(post.imageUrl)
 					return { image, post }
 				}),
